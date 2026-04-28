@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Price Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">📉</span>
+        <span class="logo-text">PriceTracker</span>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
+        <button class="nav-btn" data-tab="products">My Products</button>
+        <button class="nav-btn" data-tab="alerts">Alerts</button>
+      </nav>
+      <button class="btn btn-primary" id="openAddModal">+ Add Product</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Dashboard Tab -->
+    <section class="tab active" id="tab-dashboard">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Tracked Products</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔔</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statAlerts">0</div>
+            <div class="stat-label">Active Alerts</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📉</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statDrops">0</div>
+            <div class="stat-label">Price Drops</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-info">
+            <div class="stat-value" id="statSaved">$0</div>
+            <div class="stat-label">Total Saved</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Recent Price Activity</div>
+      <div id="recentActivity" class="activity-list">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <p>No activity yet. Add products to start tracking!</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Products Tab -->
+    <section class="tab" id="tab-products">
+      <div class="toolbar">
+        <input class="search-input" type="text" id="searchInput" placeholder="Search products..." />
+        <select class="filter-select" id="filterSelect">
+          <option value="all">All Products</option>
+          <option value="drops">Price Drops</option>
+          <option value="target">At Target</option>
+          <option value="watching">Watching</option>
+        </select>
+      </div>
+      <div id="productGrid" class="product-grid">
+        <div class="empty-state full">
+          <div class="empty-icon">🛒</div>
+          <p>No products added yet.</p>
+          <button class="btn btn-primary" id="openAddModal2">+ Add Your First Product</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Alerts Tab -->
+    <section class="tab" id="tab-alerts">
+      <div class="section-title">Price Drop Alerts</div>
+      <div id="alertList" class="alert-list">
+        <div class="empty-state">
+          <div class="empty-icon">🔕</div>
+          <p>No alerts triggered yet. Set target prices to get notified!</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add / Edit Product Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Product</h2>
+        <button class="modal-close" id="closeModal">&times;</button>
+      </div>
+      <form id="productForm" class="modal-body">
+        <input type="hidden" id="editId" />
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="fieldName" placeholder="e.g. Sony WH-1000XM5" required />
+        </div>
+        <div class="form-group">
+          <label>Product URL</label>
+          <input type="url" id="fieldUrl" placeholder="https://amazon.com/product/..." />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Current Price *</label>
+            <div class="input-with-prefix">
+              <span>$</span>
+              <input type="number" id="fieldPrice" placeholder="0.00" step="0.01" min="0" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Target Price</label>
+            <div class="input-with-prefix">
+              <span>$</span>
+              <input type="number" id="fieldTarget" placeholder="0.00" step="0.01" min="0" />
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="fieldCategory">
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Home">Home &amp; Kitchen</option>
+            <option value="Books">Books</option>
+            <option value="Sports">Sports</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <textarea id="fieldNotes" rows="2" placeholder="Optional notes..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="cancelModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveBtn">Save Product</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Update Price Modal -->
+  <div class="modal-overlay" id="updateOverlay">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Update Price</h2>
+        <button class="modal-close" id="closeUpdate">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="updateProductName" class="update-name"></p>
+        <div class="form-group">
+          <label>New Current Price</label>
+          <div class="input-with-prefix">
+            <span>$</span>
+            <input type="number" id="updatePrice" placeholder="0.00" step="0.01" min="0" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="cancelUpdate">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmUpdate">Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="detailOverlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="detailTitle">Product Details</h2>
+        <button class="modal-close" id="closeDetail">&times;</button>
+      </div>
+      <div class="modal-body" id="detailBody">
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
